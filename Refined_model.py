@@ -372,3 +372,71 @@ Solvation Models: Integration with more sophisticated solvation models like COSM
 pH Dependence: Extension to model pH-dependent solubility
 
 """
+
+
+"""
+Key Features of This Advanced Model:
+Site-Specific Differentiation:
+
+Identifies different types of deprotonation sites (catechol, phenol, resorcinol)
+
+Applies different correction factors based on site type
+
+Charge-Based Descriptors:
+
+Calculates Gasteiger partial charges for all atoms
+
+Uses charge distribution statistics (mean, std, max negative/positive)
+
+Considers charge delocalization effects
+
+Solvation Descriptors:
+
+Molecular volume approximations
+
+Polar surface area calculations
+
+Hydrophobic fraction estimation
+
+Comprehensive Reporting:
+
+Saves detailed descriptors for each molecule
+
+Generates a comprehensive analysis report
+
+Provides insights into the factors affecting solubility
+
+How to Use:
+Run the script after generating your molecular structures:
+
+bash
+python advanced_solubility.py
+The script will:
+
+Generate 3D structures with partial charges
+
+Calculate advanced descriptors for each molecule
+
+Predict solubility with site-specific adjustments
+
+Save detailed results to CSV and a summary report
+
+Expected Improvements:
+Differentiation Between Anions: The model should now differentiate between different deprotonation sites
+
+More Accurate Predictions: The use of charge-based and solvation descriptors should improve accuracy
+
+Better Handling of Ionic Species: Special consideration for charged molecules
+
+Limitations and Further Improvements:
+Training Data: For even better accuracy, the model could be trained on experimental solubility data
+
+Quantum Chemical Descriptors: Incorporation of DFT-calculated properties (electrostatic potential, etc.)
+
+Solvation Models: Integration with more sophisticated solvation models like COSMO-RS
+
+pH Dependence: Extension to model pH-dependent solubility profiles
+
+This advanced model provides a more nuanced approach to solubility prediction, particularly for ionic species and different deprotonation sites, which should address the limitations of the previous simpler models.
+
+"""
