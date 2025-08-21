@@ -1,0 +1,149 @@
+We are going to refine the model to better handle ionic species and differentiate between different deprotonation sites.
+ Steps:
+ 1. We note that the previous model treated all anions the same, but in reality, the position of deprotonation may affect the solubility.
+ 2. We will calculate additional descriptors that might capture the differences between the anions, such as:
+    - Partial charges on atoms (especially the oxygen and the ring)
+    - Distribution of charge in the molecule
+    - Dipole moment
+    - Solvent accessible surface area (SASA) of the charged group
+ 3. We will use a more sophisticated model, such as a machine learning model, if we have enough data (but we don't have experimental data for training). 
+    Alternatively, we can use physical properties to adjust the solubility prediction.
+ However, without experimental data, we can try to use quantum chemically derived properties to adjust the LSER model.
+ Approach for refinement:
+  - Use the DFT-optimized structures (from ORCA) to calculate more accurate descriptors.
+  - Calculate the electrostatic potential (ESP) derived charges (e.g., Merz-Kollman charges) to get a better description of the charge distribution.
+  - Calculate the dipole moment and use it to adjust the polarity descriptor.
+ Since we don't have the DFT results yet, we can try to use approximate methods from RDKit to get partial charges and dipole moments.
+ Let's try to use RDKit to calculate:
+   - Gasteiger charges (approximate partial charges)
+   - Dipole moment (using these charges)
+ But note: RDKit's dipole moment calculation is based on Gasteiger charges and is not very accurate, but it might be enough for relative comparisons.
+ Alternatively, we can use the MOL files we have (with 3D coordinates) and compute these properties.
+ Steps for the refined model:
+ 1. For each anion and the neutral molecule, compute:
+    - Gasteiger charges
+    - Dipole moment (vector and magnitude)
+    - The charge on the deprotonated oxygen and its environment
+ 2. Use these to adjust the Abraham descriptors, especially the S (polarity) and B (H-bond basicity) parameters.
+ 3. Alternatively, we can try to build a linear model that uses the Abraham descriptors and the new descriptors.
+ However, without experimental data, we can only do relative adjustments.
+ Let's create a new class that computes additional descriptors and then adjusts the solubility prediction.
+ We will focus on the differences between the anions.
+ Implementation:
+  - We will compute for each anion:
+        * The magnitude of the dipole moment
+        * The partial charge on the deprotonated oxygen
+        * The sum of partial charges on the aromatic ring attached to the deprotonated oxygen
+  - Then, we will adjust the solubility prediction by considering the stability of the anion (which might relate to the charge distribution) and its polarity.
+  - We assume that a more stable anion (with better charge delocalization) might be more soluble.
+  - We can adjust the Abraham prediction by a term proportional to the dipole moment and the charge on the oxygen.
+ Since we don't have a validated model, we will do a relative adjustment:
+   Adjusted_logS = Abraham_logS + w1 * (dipole_moment) + w2 * (charge_on_O) + w3 * (ring_charge)
+ But we don't know the weights. Alternatively, we can use the following reasoning:
+   - A larger dipole moment might increase solubility (more polar)
+   - A more negative charge on the oxygen might make it a stronger base and potentially more soluble, but also might be less stable and less soluble? 
+     Actually, in water, a more localized charge might be better solvated, but if the charge is delocalized, the anion might be more stable and thus more soluble.
+ This is complex. Instead, let's just compute these additional descriptors and see if they vary between the anions.
+ If they do, then we can adjust the solubility values relative to each other.
+ Steps:
+  1. For each anion, compute:
+        - Dipole moment magnitude
+        - Charge on the deprotonated oxygen
+        - Sum of charges on the ring that the oxygen is attached to (maybe 6 atoms of the ring)
+  2. Normalize these values and then adjust the solubility by a factor that is proportional to the normalized values.
+  3. We'll assume that higher dipole moment and more delocalized charge (less negative on oxygen and more spread on the ring) lead to higher solubility.
+  4. We'll adjust the solubility within a reasonable range (maybe 0.5 log units) to differentiate the anions.
+ Let's implement this.
+ Note: We are making many assumptions, but the goal is to differentiate the anions.
+ We'll create a new function that computes these additional descriptors and then adjusts the solubility.
+ However, note: the previous adjusted solubility for anions was capped at 1.0. We might want to remove the cap and then adjust relatively.
+ Alternatively, we can use the Abraham_logS (which was around -31.95 for all) and then add a relative term.
+ Since the absolute values are not meaningful, we'll focus on relative differences.
+ Implementation plan:
+  1. Compute the additional descriptors for each anion.
+  2. Normalize each descriptor to have zero mean and unit variance across the four anions.
+  3. Define a combined score: 
+        score = (dipole_moment_normalized) + (negative of charge_on_O_normalized) + (ring_charge_normalized)
+     Why negative of charge_on_O? Because a less negative charge (more delocalized) might be better.
+  4. Then, adjust the solubility by: new_logS = original_logS + 0.1 * score (so that the adjustments are small, maybe 0.5 log units total range)
+ But note: We don't have the original_logS for the anions from the Abraham model that was around -31.95, but we adjusted it to 1.0. 
+   We might want to go back to the Abraham_logS and then adjust relatively, and then reapply the empirical correction that brought it to the reasonable range.
+ Alternatively, we can adjust the adjusted_logS (which is 1.0 for all) by a small amount.
+ Since we don't know the absolute values, let's just adjust the adjusted_logS by a small amount (say, up to ±0.5) based on the additional descriptors.
+ Steps:
+   For the anions:
+      Let base_logS = 1.0 (the adjusted value we had for all)
+      Then, compute the additional descriptors and normalize across the four anions.
+      Then, adjust: new_logS = base_logS + 0.5 * (score - min(score)) / (max(score)-min(score)) - 0.25
+      This will map the scores to adjustments between -0.25 and +0.25, so the new_logS will be between 0.75 and 1.25.
+ But wait, we want the most soluble to have the highest logS.
+ Alternatively, we can rank the anions and assign logS values in a range, say 0.5 to 1.5.
+ However, let's first compute the additional descriptors and see if there are differences.
+ We'll write a function to compute:
+   - Dipole moment (using RDKit, from 3D coordinates and Gasteiger charges)
+   - Charge on the deprotonated oxygen (we know which oxygen was deprotonated by the atom index we removed the hydrogen from)
+   - Sum of charges on the aromatic ring that the oxygen is attached to.
+ Note: We need to know which oxygen was deprotonated for each anion. In our previous code, we stored the oxygen index in the tuple `phenol_oxys`.
+   We need to pass that information to this function.
+ Since we are processing the anions from MOL files, we don't have that information in the MOL file. We need to store it.
+ Alternatively, we can look for the oxygen atom with a formal charge of -1 (we set it in the MOL file). But note: the MOL file might not have formal charges.
+ Let's check: when we saved the MOL file, we set the formal charge on the oxygen. So we can find the oxygen with formal charge -1.
+ Steps for each anion MOL file:
+  1. Find the oxygen atom with formal charge -1.
+  2. Get its partial charge (Gasteiger charge)
+  3. Get the ring that this oxygen is attached to (the oxygen is attached to an aromatic carbon)
+  4. Get the sum of partial charges of the atoms in that ring.
+ How to get the ring? We can get the neighbor of the oxygen (which is a carbon in an aromatic ring) and then get the ring that contains that carbon.
+ Let's implement.
+ Note: This is getting complex and the results might be approximate, but it's for relative comparison.
+ We'll create a new class that extends the previous one.
+ Due to the complexity and time, I'll provide a simplified version that only uses the dipole moment and the charge on the oxygen.
+ We'll compute:
+   dipole_moment: magnitude in Debye
+   charge_on_O: Gasteiger charge of the deprotonated oxygen
+ Then, we'll combine them:
+   We want solubility to increase with dipole moment (more polar) and to increase with charge delocalization (less negative charge on O).
+   So we can define: score = dipole_moment - (charge_on_O)   [because charge_on_O is negative, so subtracting it makes it positive and larger]
+   Then, we'll normalize the score across the four anions and adjust the solubility.
+ Let's do it.
+ Implementation:
+  1. For each anion, compute the dipole moment and the charge on the deprotonated oxygen.
+  2. Compute the score for each anion.
+  3. Map the score to an adjustment between -0.5 and 0.5.
+  4. Adjust the solubility: new_logS = 1.0 + adjustment
+ Code:
+  We'll add a method to the ImprovedLSERSolubilityPredictor class.
+  Note: We assume we have the MOL files for the anions.
+  We'll use RDKit to compute Gasteiger charges and then the dipole moment.
+  How to compute dipole moment in RDKit:
+      from rdkit.Chem import rdMolTransforms
+      from rdkit.Chem.rdMolTransforms import ComputeCentroid
+      import numpy as np
+      # Compute Gasteiger charges
+      Chem.rdPartialCharges.ComputeGasteigerCharges(mol)
+      # Get conformer
+      conf = mol.GetConformer()
+      # Initialize dipole moment components
+      dipole_x, dipole_y, dipole_z = 0.0, 0.0, 0.0
+      center = ComputeCentroid(conf)
+      for atom in mol.GetAtoms():
+          pos = conf.GetAtomPosition(atom.GetIdx())
+          charge = atom.GetDoubleProp("_GasteigerCharge")
+          dipole_x += charge * (pos.x - center.x)
+          dipole_y += charge * (pos.y - center.y)
+          dipole_z += charge * (pos.z - center.z)
+      dipole_moment = np.sqrt(dipole_x**2 + dipole_y**2 + dipole_z**2) * 2.5418  # Convert to Debye
+  Then, for the deprotonated oxygen, we find the atom with formal charge -1 and atomic number 8.
+  Let's code accordingly.
+  We'll create a function to compute these properties for a given mol.
+  Then, we'll adjust the solubility for the anions.
+  We'll update the predict_all_structures method to include this adjustment for anions.
+  Let's do it step by step.
+  Due to the complexity, I'll provide the code for the refined model.
+  Note: This is speculative and intended for relative ranking only.
+  We'll create a new class: RefinedLSERSolubilityPredictor
+  We'll inherit from ImprovedLSERSolubilityPredictor and override the prediction for anions.
+  Steps:
+    - For the neutral molecule, we use the parent's method.
+    - For anions, we compute the additional descriptors and adjust.
+  Let's code.
