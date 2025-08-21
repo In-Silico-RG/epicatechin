@@ -1,0 +1,83 @@
+We are going to incorporate more detailed molecular descriptors to capture differences between the various anionic forms.
+ We will calculate descriptors such as:
+   - Partial charges (Gasteiger or from DFT if available)
+   - Dipole moment
+   - Molecular orbital energies (HOMO, LUMO) if available from DFT
+   - Solvent accessible surface area (SASA)
+   - Hydrogen bond counts (donor, acceptor)
+   - Aromaticity indices
+   - Topological descriptors (Wiener index, etc.)
+ However, note that some of these (like DFT properties) require quantum chemical calculations.
+ Since we are working with pre-optimized structures, we can compute some of these from the 3D structures.
+ Steps:
+ 1. For each anion and the neutral, we will compute a set of advanced descriptors.
+ 2. We will then use these descriptors in a more refined solubility model.
+ Let's assume we have the 3D structures with charges (from the previous step).
+ We'll create a new class that computes these advanced descriptors.
+ Note: We are limited by what RDKit can compute without DFT.
+ We'll focus on:
+   - Partial charges (Gasteiger)
+   - Dipole moment (if we have 3D structure with charges)
+   - Solvent accessible surface area (SASA)
+   - Hydrogen bonding descriptors
+   - Aromaticity descriptors
+   - Topological descriptors (like Wiener index, Balaban J, etc.)
+ We'll then use these in the solubility prediction.
+ However, note that the previous model already used some of these. We are now extending it.
+ Let's create a function to calculate these advanced descriptors.
+ We'll also try to differentiate the anions by the specific deprotonation site by looking at the charge on the oxygen.
+ Since we have the MOL files with charges, we can get the charge on the deprotonated oxygen and its environment.
+ We can also compute the charge delocalization in the anion.
+ Let's design the descriptor set:
+ 1. Charge on the deprotonated oxygen
+ 2. Sum of negative charges on the molecule
+ 3. Dipole moment magnitude
+ 4. Solvent accessible surface area (SASA)
+ 5. Hydrogen bond donor and acceptor counts (already have, but we can also compute potential H-bond counts considering the charge)
+ 6. Wiener index (topological)
+ 7. Balaban J (topological)
+ 8. Number of aromatic rings
+ 9. ... and others.
+ We'll then build a model that uses these descriptors.
+ However, without experimental data to train on, we can only use heuristic rules.
+ Alternatively, we can use a simple linear model with weights obtained from literature or expert knowledge.
+ Given the complexity, we might just output the descriptors and then use them in a separate analysis.
+ But for the purpose of this task, let's assume we want to use these descriptors to refine the solubility prediction.
+ We'll create a new function that uses these advanced descriptors in the solubility prediction.
+ We'll modify the `predict_solubility_advanced` function to include these descriptors.
+ Since we don't have a trained model, we'll use a heuristic formula that incorporates these descriptors.
+ Let's define:
+ logS = base_value + w1*(charge_on_O) + w2*(dipole_moment) + w3*(SASA) + ... 
+ We need to set the weights (w1, w2, ...) based on chemical intuition.
+ Alternatively, we can use a linear model from literature if available.
+ However, this is complex and might be beyond the scope.
+ Given the time, we might just compute the descriptors and then use them in a qualitative way.
+ But let's try to compute as many descriptors as possible and then see if we can see trends.
+ We'll create a function to calculate the advanced descriptors for a molecule.
+ Steps for the advanced descriptor calculation:
+ 1. Gasteiger charges (already computed in the previous step)
+ 2. Dipole moment: we can compute from the 3D structure and charges.
+ 3. SASA: using RDKit's ComputeMolSurf with the option to include SASA.
+ 4. Topological descriptors: Wiener index, Balaban J, etc.
+ Note: RDKit does not have a direct function for dipole moment. We have to compute it ourselves from the charges and coordinates.
+ Let's write a helper function to compute the dipole moment.
+ We'll also compute the following:
+   - The charge on the deprotonated oxygen (for anions)
+   - The average negative charge on oxygen atoms
+   - The number of atoms with significant negative charge (e.g., < -0.5)
+ We'll then add these to the descriptor set.
+ We'll then adjust the solubility prediction based on these.
+ Since we don't have a validated model, we'll use the following heuristic:
+ For anions:
+   logS = base_logS + (charge_on_deprotonated_O * w_charge) + (dipole_moment * w_dipole) + (SASA * w_SASA) + ...
+ We'll set the weights arbitrarily to see the relative differences.
+ Alternatively, we can just output the descriptors and let the user interpret.
+ Given the instructions, we are to incorporate these descriptors and refine the model.
+ Let's assume we want to see the relative solubility differences between the anions.
+ We'll set the base_logS from the previous model and then adjust by the new descriptors.
+ We'll set the weights such that the adjustments are in the order of 0.1 to 1.0.
+ This is very heuristic.
+ Alternatively, we can use a machine learning model if we had data.
+ Since we don't, we'll just compute the descriptors and then use a simple linear combination.
+ We'll create a new function for the advanced model.
+ Let's code the advanced descriptor calculation first.
