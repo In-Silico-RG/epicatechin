@@ -1,0 +1,207 @@
+Excellent! The solubility prediction model has been successfully trained and applied to your epicatechin compounds. Here's a summary of the results and some insights:
+
+Model Performance Summary
+Dataset Size: 9,982 compounds with solubility data
+
+Common Features: 8 molecular descriptors shared between datasets
+
+Model Performance:
+
+R² = 0.759 (good predictive power)
+
+RMSE = 1.143 (reasonable error margin)
+
+Cross-validation R² = 0.749 (±0.015) (consistent performance)
+
+Feature Importance
+The model identified these as the most important predictors of solubility:
+
+logP (68.5%) - Partition coefficient (most important)
+
+Molecular Weight (10.1%)
+
+TPSA (6.5%) - Topological Polar Surface Area
+
+Fraction of SP3 Carbons (6.3%)
+
+Rotatable Bonds (3.1%)
+
+Solubility Predictions for Epicatechin Compounds
+Compound	Predicted Solubility (logS)
+Epicatechin_neutral	-2.946
+Epicatechin_anion_1	-3.102
+Epicatechin_anion_2	-3.102
+Epicatechin_anion_3	-3.102
+Epicatechin_anion_4	-3.102
+Key Insights
+Anions vs Neutral: The model predicts that the anionic forms of epicatechin are slightly less soluble than the neutral form.
+
+Consistent Anion Predictions: All four anions received the same solubility prediction, suggesting that from the perspective of the 8 molecular descriptors used, they are indistinguishable to the model.
+
+Model Limitations: The model was trained on neutral compounds, which may limit its accuracy for predicting ionic species like your anions.
+
+Recommendations for Improvement
+Include Ionic Compounds in Training: If possible, incorporate solubility data for ionic compounds to improve predictions for charged species.
+
+Additional Descriptors: Consider adding charge-related descriptors specifically for the anionic forms to better capture their unique properties.
+
+Experimental Validation: These predictions should be validated with experimental measurements, especially given the limitations of predicting ionic species with a model trained on neutral compounds.
+
+Domain-Specific Model: For more accurate predictions of flavonoid solubility, consider building a model specifically trained on phenolic compounds or flavonoids.
+
+The results have been saved to "epicatechin_solubility_predictions.csv" for your further analysis. The model file "solubility_model.pkl" can be reused for predicting solubility of other compounds with similar molecular descriptors.
+
+
+
+
+Loaded solubility data with 9982 entries
+Calculating molecular descriptors for solubility data...
+Loaded descriptor data with 5 entries
+Found 8 common features
+Common features: ['aromatic_rings', 'mol_weight', 'tpsa', 'rotatable_bonds', 'logp', 'fraction_sp3', 'hbd', 'hba']
+Solubility Dataset Overview:
+<class 'pandas.core.frame.DataFrame'>
+RangeIndex: 9982 entries, 0 to 9981
+Data columns (total 36 columns):
+ #   Column               Non-Null Count  Dtype  
+---  ------               --------------  -----  
+ 0   ID                   9982 non-null   object 
+ 1   Name                 9982 non-null   object 
+ 2   InChI                9982 non-null   object 
+ 3   InChIKey             9982 non-null   object 
+ 4   SMILES               9982 non-null   object 
+ 5   Solubility           9982 non-null   float64
+ 6   SD                   9982 non-null   float64
+ 7   Ocurrences           9982 non-null   int64  
+ 8   Group                9982 non-null   object 
+ 9   MolWt                9982 non-null   float64
+ 10  MolLogP              9982 non-null   float64
+ 11  MolMR                9982 non-null   float64
+ 12  HeavyAtomCount       9982 non-null   float64
+ 13  NumHAcceptors        9982 non-null   float64
+ 14  NumHDonors           9982 non-null   float64
+ 15  NumHeteroatoms       9982 non-null   float64
+ 16  NumRotatableBonds    9982 non-null   float64
+ 17  NumValenceElectrons  9982 non-null   float64
+ 18  NumAromaticRings     9982 non-null   float64
+ 19  NumSaturatedRings    9982 non-null   float64
+ 20  NumAliphaticRings    9982 non-null   float64
+ 21  RingCount            9982 non-null   float64
+ 22  TPSA                 9982 non-null   float64
+ 23  LabuteASA            9982 non-null   float64
+ 24  BalabanJ             9982 non-null   float64
+ 25  BertzCT              9982 non-null   float64
+ 26  mol_weight           9980 non-null   float64
+ 27  logp                 9980 non-null   float64
+ 28  tpsa                 9980 non-null   float64
+ 29  hbd                  9980 non-null   float64
+ 30  hba                  9980 non-null   float64
+ 31  aromatic_rings       9980 non-null   float64
+ 32  rotatable_bonds      9980 non-null   float64
+ 33  heavy_atoms          9980 non-null   float64
+ 34  ring_count           9980 non-null   float64
+ 35  fraction_sp3         9980 non-null   float64
+dtypes: float64(29), int64(1), object(6)
+memory usage: 2.7+ MB
+None
+
+First few rows:
+    ID                                               Name  \
+0  A-3         N,N,N-trimethyloctadecan-1-aminium bromide   
+1  A-4                           Benzo[cd]indol-2(1H)-one   
+2  A-5                               4-chlorobenzaldehyde   
+3  A-8  zinc bis[2-hydroxy-3,5-bis(1-phenylethyl)benzo...   
+4  A-9  4-({4-[bis(oxiran-2-ylmethyl)amino]phenyl}meth...   
+
+                                               InChI  \
+0  InChI=1S/C21H46N.BrH/c1-5-6-7-8-9-10-11-12-13-...   
+1  InChI=1S/C11H7NO/c13-11-8-5-1-3-7-4-2-6-9(12-1...   
+2        InChI=1S/C7H5ClO/c8-7-3-1-6(5-9)2-4-7/h1-5H   
+3  InChI=1S/2C23H22O3.Zn/c2*1-15(17-9-5-3-6-10-17...   
+4  InChI=1S/C25H30N2O4/c1-5-20(26(10-22-14-28-22)...   
+
+                      InChIKey  \
+0  SZEMGTQCPRNXEG-UHFFFAOYSA-M   
+1  GPYLCFQEKPUWLD-UHFFFAOYSA-N   
+2  AVPYQKSLYISFPO-UHFFFAOYSA-N   
+3  XTUPUYCJWKHGSW-UHFFFAOYSA-L   
+4  FAUAZXVRLVIARB-UHFFFAOYSA-N   
+
+                                              SMILES  Solubility   SD  \
+0                [Br-].CCCCCCCCCCCCCCCCCC[N+](C)(C)C   -3.616127  0.0   
+1                               O=C1Nc2cccc3cccc1c23   -3.254767  0.0   
+2                                    Clc1ccc(C=O)cc1   -2.177078  0.0   
+3  [Zn++].CC(c1ccccc1)c2cc(C(C)c3ccccc3)c(O)c(c2)...   -3.924409  0.0   
+4  C1OC1CN(CC2CO2)c3ccc(Cc4ccc(cc4)N(CC5CO5)CC6CO...   -4.662065  0.0   
+
+   Ocurrences Group    MolWt  ...  mol_weight    logp    tpsa  hbd  hba  \
+0           1    G1  392.510  ...     392.510  3.9581    0.00  0.0  0.0   
+1           1    G1  169.183  ...     169.183  2.4055   29.10  1.0  1.0   
+2           1    G1  140.569  ...     140.569  2.1525   17.07  0.0  1.0   
+3           1    G1  756.226  ...     756.226  8.1161  120.72  2.0  6.0   
+4           1    G1  422.525  ...     422.525  2.4854   56.60  0.0  6.0   
+
+   aromatic_rings  rotatable_bonds  heavy_atoms  ring_count  fraction_sp3  
+0             0.0             17.0         23.0         0.0      1.000000  
+1             2.0              0.0         13.0         3.0      0.000000  
+2             1.0              1.0          9.0         1.0      0.000000  
+3             6.0             10.0         53.0         6.0      0.173913  
+4             2.0             12.0         31.0         6.0      0.520000  
+
+[5 rows x 36 columns]
+
+Solubility distribution:
+
+
+Correlation with solubility:
+Top 10 positive correlations:
+hbd                  0.193228
+NumHDonors           0.193066
+fraction_sp3         0.191758
+tpsa                 0.111860
+TPSA                 0.111662
+hba                  0.040814
+NumHAcceptors        0.040020
+BalabanJ             0.037329
+Ocurrences          -0.021133
+NumSaturatedRings   -0.037794
+dtype: float64
+
+Top 10 negative correlations:
+NumAromaticRings      -0.343257
+NumValenceElectrons   -0.346369
+LabuteASA             -0.349497
+heavy_atoms           -0.352655
+HeavyAtomCount        -0.352748
+mol_weight            -0.367926
+MolWt                 -0.368032
+MolMR                 -0.424452
+MolLogP               -0.608580
+logp                  -0.608778
+dtype: float64
+
+Model Performance:
+RMSE: 1.143
+R²: 0.759
+Cross-validation R²: 0.749 (±0.015)
+
+Feature ranking:
+1. logp (0.6848)
+2. mol_weight (0.1010)
+3. tpsa (0.0649)
+4. fraction_sp3 (0.0629)
+5. rotatable_bonds (0.0309)
+6. hba (0.0277)
+7. hbd (0.0140)
+8. aromatic_rings (0.0139)
+
+Model saved to solubility_model.pkl
+
+Solubility predictions for your compounds:
+Epicatechin_neutral: -2.946
+Epicatechin_anion_1: -3.102
+Epicatechin_anion_2: -3.102
+Epicatechin_anion_3: -3.102
+Epicatechin_anion_4: -3.102
+Solubility predictions saved to epicatechin_solubility_predictions.csv
+
